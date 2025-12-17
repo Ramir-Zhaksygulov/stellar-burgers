@@ -3,7 +3,8 @@ import reducer, {
   removeIngredient,
   moveIngredientUp,
   moveIngredientDown,
-  clearConstructor
+  clearConstructor,
+  initialState
 } from '../slices/constructor-slice';
 
 import type { ConstructorState } from '../slices/constructor-slice';
@@ -53,11 +54,6 @@ describe('burgerConstructor slice', () => {
     image: 'https://code.s3.yandex.net/react/code/meat-03.png',
     image_mobile: 'https://code.s3.yandex.net/react/code/meat-03-mobile.png',
     image_large: 'https://code.s3.yandex.net/react/code/meat-03-large.png'
-  };
-
-  const initialState: ConstructorState = {
-    bun: null,
-    ingredients: []
   };
 
   it('должен вернуть initialState по умолчанию', () => {
