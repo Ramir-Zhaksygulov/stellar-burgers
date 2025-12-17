@@ -1,51 +1,45 @@
-import { FC, memo, useMemo } from 'react';
+import { FC, useMemo } from 'react';
+import { useSelector } from '../../services/store';
+import { selectIngredients } from '../../services/slices/ingredients-slice';
 import { useLocation } from 'react-router-dom';
-
-import { OrderCardProps } from './type';
-import { TIngredient } from '@utils-types';
 import { OrderCardUI } from '../ui/order-card';
+import { TIngredient, TOrder } from '@utils-types';
 
-const maxIngredients = 6;
+type OrderCardProps = {
+  order: TOrder;
+  maxIngredients: number;
+};
 
-export const OrderCard: FC<OrderCardProps> = memo(({ order }) => {
+export const OrderCard: FC<OrderCardProps> = ({ order, maxIngredients }) => {
   const location = useLocation();
-
-  /** TODO: взять переменную из стора */
-  const ingredients: TIngredient[] = [];
+  const ingredientsList: TIngredient[] = useSelector(selectIngredients);
 
   const orderInfo = useMemo(() => {
-    if (!ingredients.length) return null;
-
-    const ingredientsInfo = order.ingredients.reduce(
-      (acc: TIngredient[], item: string) => {
-        const ingredient = ingredients.find((ing) => ing._id === item);
-        if (ingredient) return [...acc, ingredient];
-        return acc;
-      },
-      []
-    );
-
-    const total = ingredientsInfo.reduce((acc, item) => acc + item.price, 0);
+    const ingredientsInfo = order.ingredients
+      .map((id) => ingredientsList.find((ing) => ing._id === id))
+      .filter((ing): ing is TIngredient => !!ing);
 
     const ingredientsToShow = ingredientsInfo.slice(0, maxIngredients);
 
-    const remains =
-      ingredientsInfo.length > maxIngredients
-        ? ingredientsInfo.length - maxIngredients
-        : 0;
+    const remains = ingredientsInfo.length - ingredientsToShow.length;
 
-    const date = new Date(order.createdAt);
+    const total = ingredientsInfo.reduce((sum, ing) => sum + ing.price, 0);
+
     return {
-      ...order,
+      _id: order._id,
+      status: order.status,
+      name: order.name,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      number: order.number,
+      ingredients: order.ingredients,
       ingredientsInfo,
       ingredientsToShow,
       remains,
       total,
-      date
+      date: new Date(order.createdAt)
     };
-  }, [order, ingredients]);
-
-  if (!orderInfo) return null;
+  }, [order, ingredientsList, maxIngredients]);
 
   return (
     <OrderCardUI
@@ -54,4 +48,4 @@ export const OrderCard: FC<OrderCardProps> = memo(({ order }) => {
       locationState={{ background: location }}
     />
   );
-});
+};
